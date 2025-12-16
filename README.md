@@ -40,7 +40,7 @@ Sorgun Boğaz bölgesi için anlık deniz koşullarını gösteren uygulama.
 
 ## 📍 Konum
 
-Sabit koordinat: `36.745°N, 31.469°E` (Sorgun Boğaz, Alanya)
+Sabit koordinat: `36.745°N, 31.469°E` (Sorgun Boğaz, Manavgat)
 
 ## 📥 İndirme
 
