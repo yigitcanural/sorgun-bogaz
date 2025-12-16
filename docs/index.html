@@ -1,0 +1,342 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Sorgun Boğaz - Deniz Durumu</title>
+    <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🏊</text></svg>">
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            background: #f5f5f5;
+            min-height: 100vh;
+            padding: 20px;
+        }
+        
+        .container {
+            max-width: 420px;
+            margin: 0 auto;
+        }
+        
+        /* Header */
+        .header {
+            text-align: center;
+            padding: 20px 0;
+        }
+        
+        .location {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 6px;
+        }
+        
+        .location-icon {
+            font-size: 22px;
+        }
+        
+        .location-name {
+            font-size: 24px;
+            font-weight: 700;
+            color: #1a1a1a;
+        }
+        
+        .last-update {
+            color: #666;
+            font-size: 12px;
+            margin-top: 4px;
+        }
+        
+        /* Quality Card */
+        .quality-card {
+            background: white;
+            border-radius: 16px;
+            padding: 16px;
+            margin: 16px 0;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.08);
+        }
+        
+        .quality-title {
+            color: #666;
+            font-size: 14px;
+            font-weight: 500;
+        }
+        
+        .quality-row {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin: 10px 0;
+        }
+        
+        .quality-label {
+            font-size: 24px;
+            font-weight: 700;
+            color: #1a1a1a;
+        }
+        
+        .quality-score {
+            font-size: 18px;
+            font-weight: 600;
+            color: #666;
+        }
+        
+        .progress-bar {
+            height: 12px;
+            background: transparent;
+            border: 1px solid #888;
+            border-radius: 6px;
+            margin: 12px 0;
+            overflow: hidden;
+        }
+        
+        .progress-fill {
+            height: 100%;
+            background: #1a1a1a;
+            border-radius: 6px;
+            transition: width 0.5s ease;
+        }
+        
+        .quality-desc {
+            color: #666;
+            font-size: 13px;
+            line-height: 1.4;
+        }
+        
+        /* Weather Cards */
+        .weather-card {
+            background: white;
+            border-radius: 16px;
+            padding: 16px 20px;
+            margin: 12px 0;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.08);
+            display: flex;
+            align-items: center;
+        }
+        
+        .card-icon {
+            font-size: 32px;
+            width: 40px;
+        }
+        
+        .card-info {
+            flex: 1;
+            margin-left: 16px;
+        }
+        
+        .card-label {
+            font-size: 16px;
+            font-weight: 600;
+            color: #1a1a1a;
+        }
+        
+        .card-desc {
+            font-size: 13px;
+            color: #666;
+        }
+        
+        .card-value {
+            text-align: right;
+            min-width: 80px;
+        }
+        
+        .value-num {
+            font-size: 28px;
+            font-weight: 700;
+            color: #1a1a1a;
+        }
+        
+        .value-unit {
+            font-size: 11px;
+            color: #666;
+            margin-left: 2px;
+        }
+        
+        /* Footer */
+        .footer {
+            text-align: center;
+            padding: 24px 0;
+            color: #666;
+            font-size: 12px;
+        }
+        
+        .refresh-hint {
+            cursor: pointer;
+        }
+        
+        .refresh-hint:hover {
+            color: #1a1a1a;
+        }
+        
+        /* Loading */
+        .loading {
+            text-align: center;
+            padding: 60px 0;
+            color: #666;
+        }
+        
+        .spinner {
+            width: 40px;
+            height: 40px;
+            border: 3px solid #e0e0e0;
+            border-top-color: #1a1a1a;
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+            margin: 0 auto 16px;
+        }
+        
+        @keyframes spin {
+            to { transform: rotate(360deg); }
+        }
+        
+        /* Error */
+        .error {
+            text-align: center;
+            padding: 40px 20px;
+        }
+        
+        .error-icon {
+            font-size: 48px;
+            margin-bottom: 16px;
+        }
+        
+        .retry-btn {
+            margin-top: 16px;
+            padding: 10px 24px;
+            background: #1a1a1a;
+            color: white;
+            border: none;
+            border-radius: 8px;
+            font-size: 14px;
+            cursor: pointer;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <div class="location">
+                <span class="location-icon">📍</span>
+                <span class="location-name">Sorgun Boğaz</span>
+            </div>
+            <div class="last-update" id="lastUpdate">Yükleniyor...</div>
+        </div>
+        
+        <div id="content">
+            <div class="loading">
+                <div class="spinner"></div>
+                <div>Yükleniyor...</div>
+            </div>
+        </div>
+        
+        <div class="footer">
+            <div class="refresh-hint" onclick="loadData()">↓ Yenilemek İçin Tıklayın</div>
+        </div>
+    </div>
+
+    <script>
+        const LAT = 36.745258992105875;
+        const LON = 31.468707201398292;
+        
+        async function loadData() {
+            document.getElementById('content').innerHTML = `
+                <div class="loading">
+                    <div class="spinner"></div>
+                    <div>Yükleniyor...</div>
+                </div>
+            `;
+            
+            try {
+                const [weather, marine] = await Promise.all([
+                    fetch(`https://api.open-meteo.com/v1/forecast?latitude=${LAT}&longitude=${LON}&current=temperature_2m,wind_speed_10m,uv_index&timezone=Europe/Istanbul`).then(r => r.json()),
+                    fetch(`https://marine-api.open-meteo.com/v1/marine?latitude=${LAT}&longitude=${LON}&current=wave_height&hourly=sea_surface_temperature&timezone=Europe/Istanbul`).then(r => r.json())
+                ]);
+                
+                const airTemp = weather.current.temperature_2m;
+                const windSpeed = weather.current.wind_speed_10m;
+                const uvIndex = weather.current.uv_index || 0;
+                const waveHeight = marine.current.wave_height;
+                const seaTemp = marine.hourly.sea_surface_temperature[0];
+                
+                const { quality, score, desc } = calculateQuality(airTemp, seaTemp, waveHeight, windSpeed);
+                
+                document.getElementById('lastUpdate').textContent = `Son Güncelleme: ${new Date().toLocaleTimeString('tr-TR', {hour: '2-digit', minute: '2-digit'})}`;
+                
+                document.getElementById('content').innerHTML = `
+                    <div class="quality-card">
+                        <div class="quality-title">Denize Girme Durumu</div>
+                        <div class="quality-row">
+                            <span class="quality-label">${quality}</span>
+                            <span class="quality-score">%${score}</span>
+                        </div>
+                        <div class="progress-bar">
+                            <div class="progress-fill" style="width: ${score}%"></div>
+                        </div>
+                        <div class="quality-desc">${desc}</div>
+                    </div>
+                    
+                    ${weatherCard('☀️', 'Hava Sıcaklığı', getAirDesc(airTemp), Math.round(airTemp), '°C')}
+                    ${weatherCard('🏊', 'Deniz Suyu', getSeaDesc(seaTemp), Math.round(seaTemp), '°C')}
+                    ${weatherCard('🌊', 'Dalga Yüksekliği', getWaveDesc(waveHeight), waveHeight.toFixed(1), 'm')}
+                    ${weatherCard('💨', 'Rüzgar Hızı', getWindDesc(windSpeed), Math.round(windSpeed), 'km/h')}
+                    ${weatherCard('🌤️', 'UV Endeksi', getUvDesc(uvIndex), uvIndex.toFixed(1), '')}
+                `;
+            } catch (e) {
+                document.getElementById('content').innerHTML = `
+                    <div class="error">
+                        <div class="error-icon">☁️</div>
+                        <div style="font-weight:600;color:#1a1a1a">Bağlantı hatası</div>
+                        <div style="color:#666;margin-top:8px">${e.message}</div>
+                        <button class="retry-btn" onclick="loadData()">Tekrar Dene</button>
+                    </div>
+                `;
+            }
+        }
+        
+        function weatherCard(icon, label, desc, value, unit) {
+            return `
+                <div class="weather-card">
+                    <div class="card-icon">${icon}</div>
+                    <div class="card-info">
+                        <div class="card-label">${label}</div>
+                        <div class="card-desc">${desc}</div>
+                    </div>
+                    <div class="card-value">
+                        <span class="value-num">${value}</span><span class="value-unit">${unit}</span>
+                    </div>
+                </div>
+            `;
+        }
+        
+        function calculateQuality(air, sea, wave, wind) {
+            let score = 0;
+            score += air >= 30 ? 25 : air >= 27 ? 22 : air >= 24 ? 18 : air >= 21 ? 14 : air >= 18 ? 10 : air >= 15 ? 6 : 2;
+            score += sea >= 26 ? 25 : sea >= 24 ? 22 : sea >= 22 ? 18 : sea >= 20 ? 14 : sea >= 18 ? 10 : sea >= 16 ? 5 : 0;
+            score += wave < 0.2 ? 25 : wave < 0.4 ? 20 : wave < 0.6 ? 15 : wave < 0.8 ? 10 : wave < 1.0 ? 5 : 0;
+            score += wind < 10 ? 25 : wind < 15 ? 20 : wind < 20 ? 15 : wind < 25 ? 10 : wind < 35 ? 5 : 0;
+            
+            let quality, desc;
+            if (score >= 75) { quality = 'Mükemmel'; desc = 'Deniz koşulları mükemmel! Yüzmenin tadını çıkarın.'; }
+            else if (score >= 60) { quality = 'İyi'; desc = 'Denize girmek için uygun. Hafif dalgalara dikkat edin.'; }
+            else if (score >= 35) { quality = 'Orta'; desc = 'Dikkatli olunmalı. Deneyimli yüzücüler için uygundur.'; }
+            else { quality = 'Uygun Değil'; desc = 'Denize girmeyin! Koşullar uygun değil.'; }
+            
+            return { quality, score, desc };
+        }
+        
+        function getAirDesc(t) { return t >= 35 ? 'Çok sıcak' : t >= 30 ? 'Sıcak' : t >= 25 ? 'Ilık' : t >= 20 ? 'Serin' : t >= 15 ? 'Soğuk' : 'Çok soğuk'; }
+        function getSeaDesc(t) { return t >= 26 ? 'Ilık, yüzmeye ideal' : t >= 23 ? 'Yüzmeye müsait' : t >= 20 ? 'Serin ama yüzülebilir' : t >= 17 ? 'Soğuk' : 'Çok soğuk'; }
+        function getWaveDesc(h) { return h < 0.2 ? 'Sakin' : h < 0.5 ? 'Hafif dalgalı' : h < 1.0 ? 'Dalgalı' : h < 1.5 ? 'Yüksek dalgalı' : 'Çok dalgalı'; }
+        function getWindDesc(s) { return s < 10 ? 'Sakin' : s < 20 ? 'Hafif rüzgarlı' : s < 30 ? 'Rüzgarlı' : s < 45 ? 'Kuvvetli rüzgar' : 'Çok kuvvetli'; }
+        function getUvDesc(u) { return u < 3 ? 'Düşük' : u < 6 ? 'Orta' : u < 8 ? 'Yüksek' : u < 11 ? 'Çok yüksek' : 'Aşırı yüksek'; }
+        
+        loadData();
+    </script>
+</body>
+</html>

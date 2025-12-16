@@ -1,0 +1,27 @@
+# Local configuration
+local.properties
+
+# Large/temp files
+*.hprof
+build_log.txt
+.gradle/
+build/
+app/build/
+
+# IDE
+.idea/
+*.iml
+
+# APK files (release separately)
+*.apk
+*.aab
+
+# Proguard
+proguard/
+
+# Log files
+*.log
+
+# OS files
+.DS_Store
+Thumbs.db
